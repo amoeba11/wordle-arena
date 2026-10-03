@@ -146,6 +146,45 @@ table.board-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-n
 .code code{flex:1;font:700 15px/1 var(--mono);letter-spacing:.06em;padding:10px;background:var(--soft);border:1px dashed var(--line);user-select:all}
 .linkbtn{justify-self:start;border:0;background:none;padding:0;color:var(--accent);font-size:13px;cursor:pointer;text-decoration:underline}
 
+.ctx{width:min(100%,420px);display:grid;gap:6px;border-bottom:2px solid var(--ink);padding-bottom:12px}
+.ctx .back{font:500 12px/1 var(--mono);letter-spacing:.06em;color:var(--muted);text-decoration:none}
+.ctx-title{font:800 30px/1 var(--display);text-transform:uppercase;letter-spacing:.02em;text-wrap:balance}
+.ctx-meta{font:500 13px/1.4 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.ctx-meta b{color:var(--ink)}
+.ctx-final{background:var(--panel);border:2px solid var(--accent);padding:10px 12px;display:grid;gap:4px}
+.ctx-final .ft{font:800 18px/1 var(--display);text-transform:uppercase;letter-spacing:.04em}
+.ctx-final ol{margin:0;padding-left:20px}
+.ctx-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctx-actions .btn{padding:9px 14px}
+.compete{margin-top:18px;background:var(--panel);border:1px solid var(--line);padding:14px;display:grid;gap:16px}
+.compete h3{margin:0;font:800 18px/1 var(--display);text-transform:uppercase;letter-spacing:.04em}
+.cform{display:grid;gap:6px}
+.cform .ctitle{font:700 14px/1.2 var(--body)}
+.cform p{margin:0 0 4px;color:var(--muted);font-size:13px}
+.cform label{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.cform input,.cform select{width:100%;min-width:0;font:500 15px/1 var(--body);padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--ink)}
+.cform .btn{justify-self:start;margin-top:6px}
+.pair{display:grid;grid-template-columns:1fr 90px;gap:8px}
+.pair>div{display:grid;gap:6px}
+.invite{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px;font-size:13px}
+.invite p{margin:0}
+.invite code{flex:1;min-width:0;overflow-wrap:anywhere;font:600 13px/1.3 var(--mono);padding:9px;background:var(--soft);border:1px dashed var(--line);user-select:all}
+.invite a{color:var(--accent)}
+.strip{display:flex;gap:3px;justify-content:flex-end}
+.strip i{width:18px;height:18px;display:grid;place-items:center;font:700 10px/1 var(--mono);font-style:normal;border:1px solid var(--line);color:var(--muted)}
+.strip i.pt{background:var(--hit);border-color:transparent;color:var(--tile-ink)}
+.strip i.miss{background:var(--miss);border-color:transparent;color:var(--tile-ink)}
+.mini{display:inline-grid;grid-template-columns:repeat(5,7px);gap:2px;vertical-align:middle}
+.mini i{width:7px;height:7px;background:var(--miss)}
+.mini i.correct{background:var(--hit)}
+.mini i.present{background:var(--near)}
+.on{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line);margin-left:6px;vertical-align:middle}
+.on.yes{background:var(--hit)}
+.sb-sub{padding:10px 14px 0;font:500 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.board-t td.st{font:500 12px/1.2 var(--mono);color:var(--muted);white-space:nowrap}
+.board-t td.st b{color:var(--ink)}
+.locked .key{opacity:.55}
+
 @media (max-width:520px){
   .brand h1{font-size:32px}
   .key{height:50px}
@@ -170,6 +209,13 @@ table.board-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-n
 
 <main class="arena">
   <section class="game" aria-label="Today's puzzle">
+    <div class="ctx" id="ctx" hidden>
+      <a class="back" href="/">← Daily puzzle</a>
+      <div class="ctx-title" id="ctxTitle"></div>
+      <div class="ctx-meta" id="ctxMeta"></div>
+      <div class="ctx-final" id="ctxFinal" hidden></div>
+      <div class="ctx-actions" id="ctxActions"></div>
+    </div>
     <div class="join" id="join" hidden>
       <form id="joinForm" class="join-row">
         <label for="joinName">Pick a nickname to join the leaderboard</label>
@@ -197,8 +243,8 @@ table.board-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-n
   <aside>
     <section class="standings" aria-label="Standings">
       <div class="sb-head">
-        <h2>Standings</h2>
-        <div class="tabs" role="tablist">
+        <h2 id="sbTitle">Standings</h2>
+        <div class="tabs" id="tabs" role="tablist">
           <button class="tab" role="tab" id="tabToday" aria-selected="true">Today</button>
           <button class="tab" role="tab" id="tabAll" aria-selected="false">All-time</button>
         </div>
@@ -207,7 +253,7 @@ table.board-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-n
       <div class="sb-foot" id="sbFoot">Ranked by solved, then fewest guesses, then fastest time. New word at 00:00 UTC.</div>
     </section>
 
-    <section class="record" aria-label="Your record">
+    <section class="record" id="recordPanel" aria-label="Your record">
       <h3>Your record</h3>
       <div class="nums" id="nums"></div>
       <div class="dist" id="dist"></div>
@@ -219,6 +265,35 @@ table.board-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-n
           <div class="field"><code id="codeValue"></code><button class="btn ghost" id="copyCode" type="button">Copy</button></div>
         </div>
         <button class="linkbtn" id="newCode" type="button">Get a new recovery code</button>
+      </div>
+    </section>
+
+    <section class="compete" id="compete" hidden aria-label="Compete with friends">
+      <h3>Compete with friends</h3>
+      <form id="contestForm" class="cform">
+        <div class="ctitle">Contest</div>
+        <p>A new word each day for the days you choose. Solve in 1 for 6 points, down to 1 point for a solve in 6.</p>
+        <label for="cName">Name</label>
+        <input id="cName" maxlength="40" required placeholder="Office cup">
+        <div class="pair">
+          <div><label for="cStart">Starts (UTC)</label><input id="cStart" type="date" required></div>
+          <div><label for="cDays">Days</label><select id="cDays"></select></div>
+        </div>
+        <button class="btn" type="submit">Create contest</button>
+        <div class="err" id="cErr" role="alert"></div>
+      </form>
+      <form id="raceForm" class="cform">
+        <div class="ctitle">Live race</div>
+        <p>Everyone gets the same word at the same moment. You start each round.</p>
+        <label for="rName">Room name</label>
+        <input id="rName" maxlength="40" required placeholder="Friday race">
+        <button class="btn" type="submit">Open a race room</button>
+        <div class="err" id="rErr" role="alert"></div>
+      </form>
+      <div class="invite" id="invite" hidden>
+        <p id="inviteLabel"></p>
+        <div class="field"><code id="inviteUrl"></code><button class="btn ghost" id="copyInvite" type="button">Copy</button></div>
+        <a id="inviteOpen" href="#">Open it →</a>
       </div>
     </section>
   </aside>
@@ -286,6 +361,12 @@ const state = {
 let record = emptyRecord();
 let board = { note: "Connecting to the leaderboard…" };   // what the Standings panel shows
 let tab = "today";
+let compete = null;     // contest or race view controller when on /c/CODE or /r/CODE
+let locked = false;     // board is read-only (watching, not joined, contest not live…)
+const ROUTE = (() => {
+  const m = location.pathname.match(/^\/(c|r)\/([A-Z0-9]{6})\/?$/);
+  return m ? { kind: m[1] === "c" ? "contest" : "race", code: m[2] } : { kind: "daily" };
+})();
 let backend = null;
 
 function emptyRecord() { return { lastDate: null, lastSolvedDate: null, today: null, played: 0, wins: 0, streak: 0, maxStreak: 0, dist: [0, 0, 0, 0, 0, 0], history: {} }; }
@@ -367,7 +448,7 @@ function clearBoard() {
   Object.values(keys).forEach(k => delete k.dataset.s);
 }
 
-function fmt(ms) { if (ms == null) return "—"; const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
+function fmt(ms) { if (ms == null) return "—"; const s = Math.max(0, Math.floor(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
 function tick() {
   const end = state.finishedAt || Date.now();
   $("clock").textContent = state.startedAt ? fmt(end - state.startedAt) : "0:00";
@@ -376,7 +457,7 @@ setInterval(() => { if (state.status === "playing") tick(); }, 1000);
 
 // ---------- input ----------
 function press(k) {
-  if (state.status !== "playing" || state.busy) return;
+  if (state.status !== "playing" || state.busy || locked) return;
   if (k === "Enter") return submit();
   if (k === "Backspace") { state.input = state.input.slice(0, -1); return paintInput(); }
   if (/^[a-z]$/.test(k) && state.input.length < 5) { state.input += k; paintInput(); }
@@ -423,6 +504,11 @@ async function finish() {
 
 function showResult() {
   const el = $("result"); el.hidden = false;
+  if (compete) {
+    const [big, sub] = compete.resultText();
+    $("resultBig").textContent = big; $("resultSub").innerHTML = sub; $("shareBtn").hidden = false;
+    return;
+  }
   const t = record.today;
   if (state.status === "elsewhere" && t) {
     $("resultBig").textContent = t.solved ? `Solved in ${t.guesses}` : "Missed today";
@@ -440,7 +526,8 @@ $("shareBtn").addEventListener("click", async () => {
   const cb = document.documentElement.dataset.cb === "1";
   const glyph = { correct: cb ? "🟧" : "🟩", present: cb ? "🟦" : "🟨", absent: "⬛" };
   const grid = state.patterns.map(p => p.map(s => glyph[s]).join("")).join("\n");
-  const text = `Wordle Arena No. ${PUZZLE_NO}  ${state.status === "won" ? state.guesses.length : "X"}/6  ${fmt(state.finishedAt - state.startedAt)}\n\n${grid}`;
+  const title = compete ? compete.shareTitle() : `Wordle Arena No. ${PUZZLE_NO}`;
+  const text = `${title}  ${state.status === "won" ? state.guesses.length : "X"}/6  ${fmt(state.finishedAt - state.startedAt)}\n\n${grid}`;
   try { await navigator.clipboard.writeText(text); toast("Copied to clipboard"); }
   catch { toast("Copy isn't available here", 2000); }
 });
@@ -468,6 +555,7 @@ function who(r) {
 }
 function renderStandings() {
   const body = $("sbBody");
+  if (compete && !board.note) return;     // contest/race views draw their own tables
   if (board.note) { body.innerHTML = `<div class="sb-note">${esc(board.note)}</div>`; return; }
   if (tab === "today") {
     if (!board.today || !isDoneToday()) {
@@ -658,6 +746,8 @@ function serverBackend(game) {
     showSignIn(false);
     $("you").hidden = false; $("youName").textContent = g.player.name;
     if (code) showCode(code);
+    if (compete) { await compete.start(); return; }
+    $("compete").hidden = false;
     applyGame(g);
     await loadMe();
     setModeNote("Your results post to the public leaderboard.");
@@ -695,22 +785,257 @@ function serverBackend(game) {
   return {
     name: "server",
     async init() {
-      applyGame(game);
+      if (ROUTE.kind !== "daily") {
+        compete = ROUTE.kind === "contest" ? contestView(ROUTE.code) : raceView(ROUTE.code);
+        await compete.load();
+      } else applyGame(game);
       if (!game.player) {
-        setBoard({ note: "Pick a nickname to join the leaderboard." });
-        await refresh();
+        if (!compete) { setBoard({ note: "Pick a nickname to join the leaderboard." }); await refresh(); }
         showSignIn(true);
         return { waiting: true };
       }
       await signedIn(game);
     },
     async guess(w) {
-      const r = await api("/api/guess", { word: w });
+      const r = compete ? await compete.guess(w) : await api("/api/guess", { word: w });
       return { pattern: r.pattern, finished: r.finished, solved: r.solved, answer: r.answer, startedAt: r.startedAt, finishedAt: r.finishedAt };
     },
-    async finish() { await loadMe(); await refresh(); },
+    async finish() { if (compete) return compete.afterFinish(); await loadMe(); await refresh(); },
   };
 }
+
+// ================= competitions (server mode only) =================
+// Contest (/c/CODE): its own word each day for N days, scored 7 - guesses (0 for a miss).
+// Race (/r/CODE): the host starts rounds; everyone plays the same word at once, with live updates over SSE.
+
+function resetBoard() {
+  clearBoard();
+  Object.assign(state, { guesses: [], patterns: [], input: "", startedAt: null, finishedAt: null, status: "playing", answer: null });
+  $("result").hidden = true; tick();
+}
+function setLocked(on) { locked = on; kbEl.classList.toggle("locked", on); }
+function enterCompeteLayout(title) {
+  $("ctx").hidden = false;
+  $("recordPanel").hidden = true; $("compete").hidden = true; $("tabs").hidden = true;
+  $("sbTitle").textContent = title;
+  document.querySelector(".game").setAttribute("aria-label", title);
+}
+function ctxButton(label, onClick, ghost) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = ghost ? "btn ghost" : "btn"; b.textContent = label;
+  b.addEventListener("click", async () => { b.disabled = true; try { await onClick(); } catch (e) { toast(e.message, 2600); } finally { b.disabled = false; } });
+  return b;
+}
+async function copyText(text, done) {
+  try { await navigator.clipboard.writeText(text); toast(done); } catch { toast("Select the link and copy it", 2000); }
+}
+function inviteButton(kind, code) {
+  const url = `${location.origin}/${kind}/${code}`;
+  return ctxButton("Copy invite link", () => copyText(url, "Invite link copied"), true);
+}
+function signedInNow() { return !$("you").hidden; }
+function pointsText(n) { return `${n} ${n === 1 ? "point" : "points"}`; }
+
+function contestView(code) {
+  let v = null, shownN = null, timer = null, offset = 0;
+  async function load() {
+    try { v = await api(`/api/contests/${code}`); }
+    catch (e) { enterCompeteLayout("Contest"); $("ctxTitle").textContent = "Contest not found"; $("ctxMeta").textContent = e.message; setLocked(true); setBoard({ note: e.message }); return; }
+    offset = v.now - Date.now();
+    render();
+  }
+  function untilNext() {
+    const ms = v.nextUnlock - (Date.now() + offset);
+    return `${Math.max(0, Math.floor(ms / 3600000))}h ${Math.max(0, Math.floor(ms / 60000) % 60)}m`;
+  }
+  function render() {
+    enterCompeteLayout("Contest standings");
+    $("ctxTitle").textContent = v.name;
+    const when = new Date(v.startDate + "T00:00:00Z").toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
+    $("ctxMeta").innerHTML = v.status === "upcoming" ? `Starts <b>${esc(when)}</b> · ${v.days} days · hosted by ${esc(v.host)}`
+      : v.status === "live" ? `Day <b>${v.day + 1}</b> of ${v.days} · next puzzle in <b>${untilNext()}</b> · hosted by ${esc(v.host)}`
+      : `Finished · ${v.days} days · hosted by ${esc(v.host)}`;
+    $("issue").textContent = v.status === "live" ? `${v.name} · Day ${v.day + 1}` : v.name;
+    const fin = $("ctxFinal");
+    fin.hidden = v.status !== "over";
+    if (v.status === "over") {
+      fin.innerHTML = `<div class="ft">Final results</div><ol>${v.rows.slice(0, 3).map(r => `<li><b>${esc(r.name)}</b> · ${pointsText(r.points)}</li>`).join("")}</ol>`;
+    }
+    const act = $("ctxActions"); act.replaceChildren();
+    if (signedInNow() && !v.member && v.status !== "over") act.append(ctxButton("Join this contest", async () => { await api(`/api/contests/${code}/join`, {}); await load(); }));
+    if (v.status !== "over") act.append(inviteButton("c", code));
+    if (v.member && !v.isHost && v.status !== "over") act.append(ctxButton("Leave", async () => { await api(`/api/contests/${code}/leave`, {}); await load(); }, true));
+
+    // Board: today's contest puzzle for members while the contest is live.
+    if (v.game && v.game.n !== shownN) {
+      shownN = v.game.n; resetBoard();
+      adopt({ guesses: v.game.guesses, patterns: v.game.patterns, startedAt: v.game.startedAt, finishedAt: v.game.finishedAt, answer: v.game.answer });
+      if (state.status !== "playing") showResult();
+    }
+    if (!v.game && shownN !== null) { shownN = null; resetBoard(); }
+    setLocked(!v.game);
+    if (!v.game) $("clock").textContent = "0:00";
+
+    // Standings
+    if (!v.rows.length) { setBoard({ note: "Nobody has joined yet." }); return; }
+    $("sbBody").innerHTML = `<table class="board-t"><thead><tr><th>#</th><th>Player</th><th>Days</th><th>Pts</th></tr></thead><tbody>${
+      v.rows.map((r, i) => `<tr class="${r.me ? "me" : ""}"><td class="rk">${i + 1}</td><td class="nm">${who(r)}</td><td><div class="strip">${
+        r.days.map((d, n) => d === null ? `<i title="Day ${n + 1}"></i>` : d === 0 ? `<i class="miss" title="Day ${n + 1}: missed">✕</i>` : `<i class="pt" title="Day ${n + 1}: ${pointsText(d)}">${d}</i>`).join("")
+      }</div></td><td>${r.points}</td></tr>`).join("")
+    }</tbody></table>`;
+    board = { contest: true };
+    $("sbFoot").textContent = "6 points for a solve in 1, down to 1 for a solve in 6; a miss scores 0. Ties go to total solve time. Today's scores appear once you finish today's puzzle.";
+  }
+  return {
+    load,
+    async start() {
+      await load();
+      clearInterval(timer);
+      timer = setInterval(() => { if (!document.hidden) load(); }, 30000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+    },
+    guess: w => api(`/api/contests/${code}/guess`, { word: w }),
+    afterFinish: load,
+    resultText() {
+      const n = state.guesses.length, ms = state.finishedAt - state.startedAt;
+      const last = v && v.day === v.days - 1;
+      const tail = last ? "Final results are up once the day ends." : `Next puzzle in <b>${untilNext()}</b>`;
+      return state.status === "won"
+        ? [`Solved in ${n}`, `<b>${pointsText(7 - n)}</b> · time <b>${fmt(ms)}</b> · ${tail}`]
+        : [`It was ${(state.answer || "?????").toUpperCase()}`, `<b>0 points</b> today · ${tail}`];
+    },
+    shareTitle: () => `${v.name} · Day ${v.day + 1}`,
+  };
+}
+
+function raceView(code) {
+  let v = null, roundN = null, offset = 0, fetching = false, again = false, es = null, ticker = null, startTimer = null;
+  const serverNow = () => Date.now() + offset;
+  async function load() {
+    if (fetching) { again = true; return; }
+    fetching = true;
+    try { v = await api(`/api/races/${code}`); offset = v.now - Date.now(); render(); }
+    catch (e) {
+      if (!v) { enterCompeteLayout("Race"); $("ctxTitle").textContent = "Room not found"; $("ctxMeta").textContent = e.message; setLocked(true); setBoard({ note: e.message }); }
+    } finally {
+      fetching = false;
+      if (again) { again = false; load(); }
+    }
+  }
+  function meta() {
+    const r = v.round;
+    if (!r) return v.isHost ? "Invite people, then start the first round." : "Waiting for the host to start the first round.";
+    if (r.ended) return `Round ${r.n} is over. The word was <b>${esc((r.answer || "").toUpperCase())}</b>.${v.isHost ? "" : " Waiting for the host to start the next round."}`;
+    const now = serverNow();
+    if (now < r.startsAt) return `Round ${r.n} starts in <b>${Math.ceil((r.startsAt - now) / 1000)}</b>…`;
+    const watching = !r.mine ? " · You're watching; you'll join next round." : "";
+    return `Round ${r.n} · <b>${fmt(r.endsAt - now)}</b> left${watching}`;
+  }
+  function renderMeta() { if (v) $("ctxMeta").innerHTML = meta(); }
+  function render() {
+    enterCompeteLayout("Race");
+    const r = v.round;
+    $("ctxTitle").textContent = v.name;
+    $("issue").textContent = r ? `${v.name} · Round ${r.n}` : v.name;
+    renderMeta();
+    const act = $("ctxActions"); act.replaceChildren();
+    if (signedInNow() && !v.member) act.append(ctxButton("Join this room", async () => { await api(`/api/races/${code}/join`, {}); await load(); }));
+    if (v.isHost && (!r || r.ended)) act.append(ctxButton(r ? "Start next round" : "Start round", async () => { await api(`/api/races/${code}/start`, {}); await load(); }));
+    act.append(inviteButton("r", code));
+
+    // Board
+    if (r && r.n !== roundN) {
+      roundN = r.n; resetBoard();
+      state.startedAt = r.startsAt - offset;
+      if (r.mine && r.mine.guesses.length) {
+        adopt({ guesses: r.mine.guesses, patterns: r.mine.patterns, startedAt: r.startsAt - offset,
+                finishedAt: r.mine.finishedAt ? r.mine.finishedAt - offset : null, answer: r.answer });
+        if (state.status !== "playing") showResult();
+      }
+    }
+    if (r && r.ended && r.mine && state.status === "playing") {
+      // Time ran out (or the round closed) before this player finished.
+      state.status = "lost"; state.answer = r.answer; state.finishedAt = r.startsAt - offset + (r.endsAt - r.startsAt);
+      showResult();
+    } else if (r && r.ended && state.status !== "playing") {
+      state.answer = r.answer; showResult();
+    }
+    const live = r && r.mine && !r.ended && serverNow() >= r.startsAt;
+    setLocked(!live);
+    clearTimeout(startTimer);
+    if (r && r.mine && !r.ended && serverNow() < r.startsAt) startTimer = setTimeout(render, r.startsAt - serverNow() + 30);
+    if (!r || !r.mine) $("clock").textContent = "0:00";
+
+    // Standings: room totals, then this round live
+    const rows = v.members.map((m, i) => `<tr class="${m.me ? "me" : ""}"><td class="rk">${i + 1}</td><td class="nm"><div class="who"><i class="dot" style="background:${esc(m.color)}"></i><span>${esc(m.name)}${m.me ? " (you)" : ""}${m.host ? " · host" : ""}</span><i class="on${m.online ? " yes" : ""}" title="${m.online ? "Here now" : "Away"}"></i></div></td><td>${m.points}</td></tr>`).join("");
+    let html = `<table class="board-t"><thead><tr><th>#</th><th>Player</th><th>Pts</th></tr></thead><tbody>${rows}</tbody></table>`;
+    if (r && r.players.length) {
+      html += `<div class="sb-sub">Round ${r.n}</div><table class="board-t"><tbody>${
+        r.players.map(p => {
+          const grid = `<span class="mini">${p.patterns.flat().map(c => `<i class="${c}"></i>`).join("")}</span>`;
+          const st = p.finished ? (p.solved ? `<b>${fmt(p.ms)}</b> · +${p.points}` : "Out") : (r.ended ? "Out" : "Playing…");
+          return `<tr class="${p.me ? "me" : ""}"><td class="nm"><div class="who"><i class="dot" style="background:${esc(p.color)}"></i><span>${esc(p.name)}</span></div></td><td>${grid}</td><td class="st">${st}</td></tr>`;
+        }).join("")
+      }</tbody></table>`;
+    }
+    $("sbBody").innerHTML = html;
+    board = { race: true };
+    $("sbFoot").textContent = "Points per round: 6 for a solve in 1, down to 1 for a solve in 6. Ties go to total solve time. Others see your colors, never your letters.";
+  }
+  return {
+    load,
+    async start() {
+      await load();
+      clearInterval(ticker);
+      ticker = setInterval(() => {
+        renderMeta();
+        if (v && v.round && !v.round.ended && serverNow() > v.round.endsAt + 1500) load();   // time's up: pick up the result
+      }, 500);
+      if (es) es.close();
+      es = new EventSource(`/api/races/${code}/events`);
+      es.addEventListener("changed", () => load());
+      setInterval(() => { if (!document.hidden) load(); }, 15000);   // fallback if events stall
+    },
+    guess: w => api(`/api/races/${code}/guess`, { word: w }),
+    afterFinish: load,
+    resultText() {
+      const n = state.guesses.length, ms = state.finishedAt - state.startedAt;
+      const waiting = v && v.round && !v.round.ended ? " · waiting for the others" : "";
+      return state.status === "won"
+        ? [`Solved in ${n}`, `<b>+${7 - n}</b> · time <b>${fmt(ms)}</b>${waiting}`]
+        : [state.answer ? `It was ${state.answer.toUpperCase()}` : "Out of guesses", `<b>0 points</b> this round${waiting}`];
+    },
+    shareTitle: () => `${v.name} · Round ${v.round ? v.round.n : 1}`,
+  };
+}
+
+// ---------- create forms (daily view, server mode) ----------
+(() => {
+  const sel = $("cDays");
+  for (let d = 1; d <= 14; d++) sel.append(new Option(`${d}`, d, d === 7, d === 7));
+  const todayUtc = new Date().toISOString().slice(0, 10);
+  $("cStart").value = todayUtc; $("cStart").min = todayUtc;
+  function showInvite(kind, code, label) {
+    const url = `${location.origin}/${kind}/${code}`;
+    $("invite").hidden = false; $("inviteLabel").textContent = label;
+    $("inviteUrl").textContent = url; $("inviteOpen").href = `/${kind}/${code}`;
+  }
+  $("copyInvite").addEventListener("click", () => copyText($("inviteUrl").textContent, "Invite link copied"));
+  $("contestForm").addEventListener("submit", async e => {
+    e.preventDefault(); $("cErr").textContent = "";
+    try {
+      const r = await api("/api/contests", { name: $("cName").value.trim(), startDate: $("cStart").value, days: +$("cDays").value });
+      showInvite("c", r.code, "Contest created. Share this link so people can join:");
+    } catch (err) { $("cErr").textContent = err.message; }
+  });
+  $("raceForm").addEventListener("submit", async e => {
+    e.preventDefault(); $("rErr").textContent = "";
+    try {
+      const r = await api("/api/races", { name: $("rName").value.trim() });
+      showInvite("r", r.code, "Race room open. Share this link, then open the room to start rounds:");
+    } catch (err) { $("rErr").textContent = err.message; }
+  });
+})();
 
 // ---------- choose a backend ----------
 async function probeServer() {
@@ -758,6 +1083,7 @@ async function probeServer() {
   }
   if (result && result.waiting) return;   // the nickname card is up
   state.busy = false;
+  if (compete) return;                    // competition views manage their own board
   settle();
 })();
 </script>

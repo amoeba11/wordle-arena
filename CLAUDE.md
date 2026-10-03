@@ -43,7 +43,18 @@ after changes.
 
 To test the server mode locally, run `python3 server/devserver.py`, a stdlib + SQLite reference implementation of the spec, and open http://localhost:8787. `WA_DAY=n` fakes the day.
 
-## Word lists
+## Group competitions (server mode only)
+
+On the Replit app the page also has two group modes, chosen from the URL path (`ROUTE` in the script):
+
+- **Contest** (`/c/CODE`, `contestView()`): the host picks a name, start date and 1–14 days. Each day has its own server-picked word, playable only on that day.
+- **Live race** (`/r/CODE`, `raceView()`): the host starts rounds; everyone online plays the same word, with a 3 s countdown and a 5 min limit. The page listens on `/api/races/:code/events` (SSE) and re-fetches the room snapshot on each `changed` event.
+
+Both score `7 − guesses` per puzzle (0 for a miss), with ties broken by total solve time. They reuse the daily board, `submit()`, `adopt()` and `clearBoard()`; `compete` holds the active view and `locked` makes the board read-only. The create forms live in the "Compete with friends" panel on the daily view. The server contract is the second half of `server/SPEC.md`.
+
+To test them locally, run `devserver.py`. `WA_ROUND_MS` shortens race rounds, and the dev-only `X-WA-Day` header steps contest days.
+
+
 
 `ANSWERS_RAW` (space-separated) and `VALID_RAW` (concatenated 5-letter chunks, which include every
 answer) are generated, along with `server/seed.sql`. Edit `tools/answers.txt`, then run `tools/build_words.sh`, which
