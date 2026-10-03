@@ -27,6 +27,12 @@ link above. Omitting `capabilities` keeps the stored ones:
 Because an artifact that declares `db` is org-internal, only signed-in members of
 the owner's claude.ai org can play on the leaderboard.
 
+The code also lives at https://github.com/amoeba11/wordle-arena, and GitHub Pages
+serves it from `main` / root at https://amoeba11.github.io/wordle-arena/. Any
+push to `main` deploys there. That copy always runs in solo mode (no
+leaderboard). The Artifact doesn't update on push, so republish it separately
+after changes.
+
 ## Word lists
 
 `ANSWERS_RAW` (space-separated) and `VALID_RAW` (concatenated 5-letter chunks) are
