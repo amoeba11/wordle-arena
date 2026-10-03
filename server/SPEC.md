@@ -241,7 +241,7 @@ It also creates a `race_games` row for every member who is online at that moment
 - **403** "Wait for the next round to join in." This applies when the player isn't one of the round's players.
 - **409** "You've finished this round."
 
-Otherwise it plays the guess, checks whether the round should end, and notifies the room.
+Otherwise it plays the guess, checks whether the round should end, and notifies the room. Include `answer` in the response only if the round has ended after this guess. A player who finishes early, especially one who missed, must not learn the word while others are still playing.
 
 **Ending a round.** A round ends once `ended_at IS NULL` and either:
 - every row in `race_games` for it is finished, or

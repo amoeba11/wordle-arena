@@ -473,7 +473,8 @@ class H(BaseHTTPRequestHandler):
         end_round_if_due(rid)
         notify(rid)
         out = {"pattern": pattern, "finished": finished, "solved": solved if finished else None, "startedAt": st, "finishedAt": fin}
-        if finished: out["answer"] = word
+        # Only reveal the word once the round is over, so a player who missed can't tell the others.
+        if db.execute("SELECT ended_at FROM race_rounds WHERE race_id=? AND n=?", (rid, n)).fetchone()[0] is not None: out["answer"] = word
         return self.send(200, out)
 
     def race_events(self, code):

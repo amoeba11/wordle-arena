@@ -492,7 +492,7 @@ async function submit() {
   setTimeout(() => {
     state.busy = false;
     if (state.status === "won") { rows[r].row.classList.add("win"); toast(["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"][r], 2000); }
-    if (state.status === "lost") toast((state.answer || "").toUpperCase(), 4000);
+    if (state.status === "lost") toast(state.answer ? state.answer.toUpperCase() : "Out of guesses", state.answer ? 4000 : 2000);
     if (res.finished) finish();
   }, 5 * 220 + 350);
 }
