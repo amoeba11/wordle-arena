@@ -33,10 +33,20 @@ push to `main` deploys there. That copy always runs in solo mode (no
 leaderboard). The Artifact doesn't update on push, so republish it separately
 after changes.
 
+## Three backends
+
+`index.html` picks one at load time; the game core only calls `backend.guess(word)`:
+
+- `artifactBackend` when `window.claude` exists (the Claude Artifact). It uses the artifact db, scores locally, and its leaderboard is org-only.
+- `serverBackend` when `GET /api/game` answers with JSON. This is the public Replit app. The server holds the answers and scores guesses, and serves this same file with `ANSWERS_RAW` blanked, so players can't read the answer. The contract is in `server/SPEC.md`, the schema in `server/schema.sql`, and the generated `server/seed.sql` contains the answers and valid words.
+- `soloBackend` everywhere else, such as GitHub Pages or a local file. There's no leaderboard, and stats stay in `localStorage`. Set `LIVE_URL` in the script to show a link to the public app.
+
+To test the server mode locally, run `python3 server/devserver.py`, a stdlib + SQLite reference implementation of the spec, and open http://localhost:8787. `WA_DAY=n` fakes the day.
+
 ## Word lists
 
-`ANSWERS_RAW` (space-separated) and `VALID_RAW` (concatenated 5-letter chunks) are
-generated. Edit `tools/answers.txt`, then run `tools/build_words.sh`, which
+`ANSWERS_RAW` (space-separated) and `VALID_RAW` (concatenated 5-letter chunks, which include every
+answer) are generated, along with `server/seed.sql`. Edit `tools/answers.txt`, then run `tools/build_words.sh`, which
 rewrites those two lines in `index.html`. Valid guesses come from the macOS
 `/usr/share/dict/words` list (Webster's 2nd, public domain) plus simple
 inflections that list omits (plurals, -ed, -es). No NYT lists are used.
